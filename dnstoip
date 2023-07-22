@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+import socket
+import sys
+import threading
+
+MAX_THREADS = 100
+
+def get_ip(dns):
+    try:
+        return socket.gethostbyname(dns)
+    except socket.gaierror:
+        return "error"
+
+def main():
+    with open(sys.argv[1], "r") as f:
+        dns_list = f.read().splitlines()
+    ip_list = []
+    threads = []
+    for dns in dns_list:
+        t = threading.Thread(target=ip_list.append(get_ip(dns)))
+        threads.append(t)
+        t.start()
+        if len(threads) >= MAX_THREADS:
+            for thread in threads:
+                thread.join()
+            threads = []
+    for thread in threads:
+        thread.join()
+    for ip in ip_list:
+        if ip != "error":
+            print(ip)
+
+    
+
+if __name__ == "__main__":
+    main()
